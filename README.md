@@ -1,0 +1,2 @@
+The Human Activity Recognition Trondheim (HARTH) dataset is a professionally-annotated dataset containing 22 subjects wearing two 3-axial accelerometers,  attached to the right thigh and lower back, for around 2 hours in a free-living setting.(https://archive.ics.uci.edu/dataset/779/harth)
+In this project we analyze the dataset and train 3 different machine learning classifiers(based on Neural Networks, Random Forests and Bayesian Networks) for human activity recognition based on professional annotations of 12 different activities.
