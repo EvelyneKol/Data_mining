@@ -1,32 +1,40 @@
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import glob
+import seaborn as sns  # Import seaborn for color palettes
 
-# Directory containing the CSV files
-directory = 'harth'
+# Get a list of all CSV files in a directory
+csv_files = glob.glob('harth/*.csv')
 
-# List all CSV files in the directory
-csv_files = [file for file in os.listdir(directory) if file.endswith('.csv')]
+# Define the labels dictionary
+labels = {1: "walking", 2: "running", 3: "shuffling", 4: "stairs (ascending)",
+          5: "stairs (descending)", 6: "standing", 7: "sitting", 8: "lying",
+          13: "cycling (sit)", 14: "cycling (stand)", 130: "cycling (sit, inactive)", 140: "cycling (stand, inactive)"}
 
-# Iterate over each CSV file
-for file in csv_files:
-    # Read the CSV file
-    file_path = os.path.join(directory, file)
-    df = pd.read_csv(file_path)
+# Define a color palette with enough colors for the number of CSV files
+colors = sns.color_palette('husl', len(csv_files))
 
-    # Group by 'label' column and compute the mode for each group
-    modes = df.groupby('label')[['back_x', 'back_y', 'back_z', 'thigh_x', 'thigh_y', 'thigh_z']].apply(lambda x: x.mode().iloc[0])
+# Iterate through each column
+for column in ['back_x', 'back_y', 'back_z', 'thigh_x', 'thigh_y', 'thigh_z']:
+    plt.figure(figsize=(12, 8))
 
-    # Plot scatter graph
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    # Iterate through each CSV file
+    for idx, csv_file in enumerate(csv_files):
+        # Read the CSV file
+        df = pd.read_csv(csv_file)
+        mode_df = df.groupby('label')[column].apply(lambda x: x.mode().iloc[0])  # Calculate the mode
+        mode_df = mode_df.reset_index()  # Resetting the index to access the 'label' column
+        mode_df['label'] = mode_df['label'].map(labels)
+        mode_df = mode_df.sort_values(by='label')  # Sorting by label
 
-    for i, col in enumerate(['back_x', 'back_y', 'back_z', 'thigh_x', 'thigh_y', 'thigh_z']):
-        ax = axs[i//3, i%3]
-        ax.scatter(modes.index, modes[col])
-        ax.set_title(col)
-        ax.set_xlabel('Label')
-        ax.set_ylabel('Mode')
+        # Plot mode values for the current column and CSV file
+        plt.scatter(mode_df['label'], mode_df[column], color=colors[idx])
 
-    fig.suptitle(f"Scatter plot of modes for {file}", y=1.02)
+    # Add title, labels, and legend
+    plt.title(f"Mode Values for {column}")
+    plt.xlabel('Label')
+    plt.ylabel('Mode Values')
+    plt.xticks(rotation=45, ha='right')
+
     plt.tight_layout()
     plt.show()
